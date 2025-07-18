@@ -1,0 +1,44 @@
+[
+    {
+        "name": "Pink",
+        "cells_1": "pale violet red",
+        "cells_2": "light pink",
+        "bg": "LightPink1"
+    },
+    {
+        "name": "Gray",
+        "cells_1": "azure4",
+        "cells_2": "azure3",
+        "bg": "gray50"
+    },
+    {
+        "name": "Green",
+        "cells_1": "dark slate gray",
+        "cells_2": "#82bda8",
+        "bg": "#35856a"
+    },
+    {
+        "name": "Orange",
+        "cells_1": "#cb2e00",
+        "cells_2": "#f3874d",
+        "bg": "#df5a23"
+    },
+    {
+        "name": "Red",
+        "cells_1": "firebrick3",
+        "cells_2": "IndianRed1",
+        "bg": "#aa2233"
+    },
+    {
+        "name": "Purple",
+        "cells_1": "DarkOrchid3",
+        "cells_2": "plum1",
+        "bg": "#d880ed"
+    },
+    {
+        "name": "Blue",
+        "cells_1": "#314faf",
+        "cells_2": "#84b5ff",
+        "bg": "#0047ab"
+    }
+]
