@@ -74,7 +74,7 @@ class ImportWindow(EntryWindow):
         prompt = self.entry.get()
         if self._grid.import_(prompt):
             self._gui.set_info_text('pattern_import')
-            self._grid_frame.update()
+            self._grid_frame.update_all()
             self.on_close()
         elif prompt:
             self.info_label['text'] = 'Invalid input!'
@@ -101,7 +101,6 @@ class RenameWindow(EntryWindow):
         prompt = self.entry.get()
         if self._pt_listbox.rename_pattern(self.selected_pattern, prompt):
             self._gui.set_info_text('pattern_rename', self.selected_pattern, prompt)
-            self._grid_frame.update()
             self.on_close()
         elif prompt:
             self.info_label['text'] = f'Pattern \'{prompt}\' already exists!'
@@ -141,7 +140,7 @@ class RandomWindow(EntryWindow):
         if prompt.isdigit() and 0 <= int(prompt) <= 100:
             self._gui.set_info_text('pattern_random')
             self._grid.generate_random(int(prompt))
-            self._grid_frame.update()
+            self._grid_frame.update_all()
             self.on_close()
         elif prompt:
             self.info_label['text'] = 'Invalid input!'

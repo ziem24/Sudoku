@@ -1,4 +1,5 @@
 import json
+import platform
 import tkinter as tk
 from src.grid import Grid
 from src.windows import SaveWindow, ImportWindow, ExportWindow, RenameWindow, DeleteWindow, RandomWindow
@@ -10,7 +11,7 @@ class MainGUI(tk.Tk):
 
         self.resizable(False, False)
         self.config(padx=15, pady=15)
-        self.title('Sudoku v2.0 - Linux')
+        self.title('Sudoku v2.0')
         self.protocol('WM_DELETE_WINDOW', self.on_close_mainWindow)
         self.current_state = 'normal'
         self.current_theme = -1  # incremented to 0 when calling set_next_theme
@@ -107,14 +108,15 @@ class MainGUI(tk.Tk):
 
 class Cell(tk.Button):
     def __init__(self, master: tk.Frame, gui: MainGUI, index: int):
-        super().__init__(master=master, text=' ', command=self.on_click)
+        width = {'Linux': 1, 'Windows': 2}.get(platform.uname().system, 1)
+        super().__init__(width=width, height=1, master=master, text=' ', command=self.on_click)
 
         self._gui = gui
         self._grid = gui.main_grid
         self.index = index
         # scary math to see if it's in an odd-numbered sector
         self.uses_color_1 = bool((3 * (index // 27) + index % 9 // 3) % 2)
-        self.configure(font='Terminal', disabledforeground='black')
+        self.configure(disabledforeground='black')
         self.bind('<KeyPress>', self.new_value)
 
     def on_click(self):
