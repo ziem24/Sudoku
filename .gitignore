@@ -1,0 +1,4 @@
+__pycache__
+.vscode
+setup.cfg
+database.json
