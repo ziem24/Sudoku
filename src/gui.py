@@ -1,7 +1,7 @@
 import json
 import platform
 import tkinter as tk
-from src.grid import Grid
+from src.board import Board
 from src.windows import SaveWindow, ImportWindow, ExportWindow, RenameWindow, DeleteWindow, RandomWindow
 
 
@@ -16,7 +16,7 @@ class MainGUI(tk.Tk):
         self.current_state = 'normal'
         self.current_theme = -1  # incremented to 0 when calling set_next_theme
         self.opened_window = None
-        self.main_grid = Grid()
+        self.main_grid = Board()
 
         with open('src/_themes.json', 'r') as f:
             self.themes = json.load(f)
@@ -238,7 +238,7 @@ class ActionButtonFrame(tk.Frame):
             self._pt_listbox.unfocus()
 
     def on_press_solve(self):
-        self.pre_solve_grid = self._grid.grid.copy()  # copying values instead of a reference (important!!)
+        self.pre_solve_grid = self._grid.board.copy()  # copying values instead of a reference (important!!)
         count, dt = self._grid.solve()
         if (count, dt) != (None, None):
             self._gui.set_info_text('board_solve', count, f'{dt:.3f}', count/dt)
@@ -258,7 +258,7 @@ class ActionButtonFrame(tk.Frame):
     def on_press_undo(self):
         self._gui.set_states_on_event('normal')
         self._gui.set_info_text('board_undo')
-        self._grid.grid, self.pre_solve_grid = self.pre_solve_grid, [0] * 81
+        self._grid.board, self.pre_solve_grid = self.pre_solve_grid, [0] * 81
         self._grid_frame.update_all()
         self._pt_listbox.unfocus()
 
