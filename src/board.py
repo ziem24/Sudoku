@@ -42,6 +42,12 @@ class Board():
     def __setitem__(self, key: int, value: int):
         self.board[key] = value
 
+    def set_use_MRV(self, value: bool):
+        self.use_MRV = value
+
+    def set_use_LCV(self, value: bool):
+        self.use_LCV = value
+
     def is_cell_valid(self, key: int, value: int) -> bool:
         # EXPERIMENT: RCB: 677k, RBC: 607k, CRB: 714k, CBR: 665k, BRC: 542k, BCR: 544k [iter/s]
         r = key // 9
