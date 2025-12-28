@@ -1,4 +1,4 @@
-import tkinter as tk
+from src import tk
 
 
 class Window(tk.Tk):
