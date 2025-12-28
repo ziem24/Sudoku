@@ -1,5 +1,5 @@
 from pathlib import Path
-from src.gui import MainGUI
+from src import MainGUI
 
 
 def main():
