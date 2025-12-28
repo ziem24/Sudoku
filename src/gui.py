@@ -16,28 +16,21 @@ class MainGUI(tk.Tk):
         self.current_state = 'normal'
         self.current_theme = -1  # incremented to 0 when calling set_next_theme
         self.opened_window = None
-        self.main_grid = Board()
+        self.main_board = Board()
 
         with open('src/_themes.json', 'r') as f:
             self.themes = json.load(f)
 
-        self.grid_frame = GridFrame(self)
-        self.grid_frame.grid(row=0, column=0, rowspan=2)
-
-        self.pattern_listbox = PatternList(self)
-        self.pattern_listbox.grid(row=1, column=2)
-
-        self.bt_frame = ActionButtonFrame(self)
-        self.bt_frame.grid(row=1, column=1, rowspan=2, padx=15, sticky='n')
-
+        self.board_frame = BoardFrame(self)
+        self.board_frame.grid(row=0, column=0, padx=15, sticky='n')
+        self.pattern_frame = PatternFrame(self)
+        self.pattern_frame.grid(row=0, column=1, padx=15, sticky='n')
+        self.action_frame = ActionButtonFrame(self)
+        self.action_frame.grid(row=0, column=2, padx=15, sticky='n')
+        self.config_frame = ConfigFrame(self)
+        self.config_frame.grid(row=0, column=3, padx=15, sticky='n')
         self.info_label = tk.Label(self)
-        self.info_label.grid(row=2, columnspan=3, pady=15)
-
-        self.config_label = tk.Label(self, text='Configuration:')
-        self.config_label.grid(row=0, column=1)
-
-        self.pattern_label = tk.Label(self, text='Your saved patterns:')
-        self.pattern_label.grid(row=0, column=2)
+        self.info_label.grid(row=1, columnspan=4, pady=15)
 
         self.set_next_theme()
         self.set_info_text('init')
@@ -50,31 +43,35 @@ class MainGUI(tk.Tk):
         theme = self.themes[self.current_theme]
         new_bg = theme['bg']
 
-        self.bt_frame.set_theme(new_bg)
-        for obj in (self, self.info_label, self.pattern_label, self.config_label):
-            obj['bg'] = new_bg
-        for cell in self.grid_frame.cells:
-            cell.set_bg_color(color_1=theme['cells_1'], color_2=theme['cells_2'])
+        self['bg'] = new_bg
+        self.info_label['bg'] = new_bg
+
+        self.board_frame.set_theme(theme['cells_1'], theme['cells_2'])
+        self.action_frame.set_theme(new_bg)
+        self.pattern_frame.set_theme(new_bg)
+        self.config_frame.set_theme(new_bg)
 
     def set_states_on_event(self, new_state: str):
         self.state = new_state
+        self.action_frame.bt_manual['state'] = 'disabled'  # REMOVE THIS FUCKING FUCK WHEN YOU BUILD THE MANUAL
 
         if new_state == 'normal':  # clear, undo solve, close window
-            self.grid_frame.set_state('normal')
-            self.bt_frame.set_states('disabled', ['undo'])
-            self.pattern_listbox['state'] = 'normal'
+            self.board_frame.set_state('normal')
+            self.action_frame.set_states('disabled', ['undo'])
+            self.config_frame.set_state('normal')
+            self.pattern_frame.set_state('normal')
 
         elif new_state == 'solve':
-            self.grid_frame.set_state('disabled')
-            self.bt_frame.set_states('normal', ['save', 'export', 'undo', 'clear', 'theme', 'manual'])
-            self.pattern_listbox['state'] = 'disabled'
+            self.board_frame.set_state('disabled')
+            self.action_frame.set_states('normal', ['save', 'export', 'undo', 'clear', 'theme', 'manual'])
+            self.config_frame.set_state('disabled')
+            self.pattern_frame.set_state('disabled')
 
         elif new_state == 'open_win':
-            self.grid_frame.set_state('disabled')
-            self.bt_frame.set_states('normal', [])
-            self.pattern_listbox['state'] = 'disabled'
-
-        self.bt_frame.bt_manual['state'] = 'disabled'           # REMOVE THIS FUCKING SCHEISSE WHEN YOU BUILD THE MANUAL
+            self.board_frame.set_state('disabled')
+            self.action_frame.set_states('normal', [])
+            self.config_frame.set_state('disabled')
+            self.pattern_frame.set_state('disabled')
 
     def set_info_text(self, key: str, *args):
         args_0 = args[0] if len(args) >= 1 else None
@@ -112,7 +109,7 @@ class Cell(tk.Button):
         super().__init__(width=width, height=1, master=master, text=' ', command=self.on_click)
 
         self._gui = gui
-        self._grid = gui.main_grid
+        self._board = gui.main_board
         self.index = index
         # scary math to see if it's in an odd-numbered sector
         self.uses_color_1 = bool((3 * (index // 27) + index % 9 // 3) % 2)
@@ -127,11 +124,11 @@ class Cell(tk.Button):
         if event.char.isdigit():
             if event.char == '0':
                 self._gui.set_info_text('empty')
-                self._grid[self.index] = 0
+                self._board[self.index] = 0
                 self['text'] = ' '
-            elif self._grid.is_cell_valid(self.index, int(event.char)):
+            elif self._board.is_cell_valid(self.index, int(event.char)):
                 self._gui.set_info_text('empty')
-                self._grid[self.index] = int(event.char)
+                self._board[self.index] = int(event.char)
                 self['text'] = event.char
             else:
                 self._gui.set_info_text('invalid', event.char)
@@ -140,11 +137,11 @@ class Cell(tk.Button):
         self['bg'] = color_1 if self.uses_color_1 else color_2
 
 
-class GridFrame(tk.Frame):
+class BoardFrame(tk.Frame):
     def __init__(self, gui: MainGUI):
         super().__init__()
         self._gui = gui
-        self._grid = gui.main_grid
+        self._board = gui.main_board
         self.cells = []
 
         for index in range(81):
@@ -156,20 +153,24 @@ class GridFrame(tk.Frame):
         for cell in self.cells:
             cell['state'] = state
 
+    def set_theme(self, color_1: str, color_2: str):
+        for cell in self.cells:
+            cell.set_bg_color(color_1, color_2)
+
     def update_all(self):
         for index, cell in enumerate(self.cells):
-            cell['text'] = self._grid[index] if self._grid[index] else ' '
+            cell['text'] = self._board[index] if self._board[index] else ' '
 
     def update_after_solve(self, pre_solve_state: list[int]):
         for index, cell in enumerate(self.cells):
             cell['disabledforeground'] = 'black' if pre_solve_state[index] else 'blue'
-            cell['text'] = self._grid[index] if self._grid[index] else ' '
+            cell['text'] = self._board[index] if self._board[index] else ' '
 
 
 class ActionButton(tk.Button):
-    def __init__(self, master: tk.Frame, text: str, row: int, column: int, command):
+    def __init__(self, master: tk.Frame, text: str, row: int, column: int, command: callable):
         super().__init__(master=master, text=text, command=command, width=10)
-        self.grid(row=row, column=column, padx=5, pady=5)
+        self.grid(row=row, column=column+1, padx=5, pady=5)
 
 
 class ActionButtonFrame(tk.Frame):
@@ -177,11 +178,14 @@ class ActionButtonFrame(tk.Frame):
         super().__init__()
 
         self._gui = gui
-        self._grid = gui.main_grid
-        self._grid_frame = gui.grid_frame
-        self._pt_listbox = gui.pattern_listbox
-        self.pre_solve_grid = [0] * 81
+        self._board = gui.main_board
+        self._board_frame = gui.board_frame
+        self._pt_listbox = gui.pattern_frame
+        self.pre_solve_board = [0] * 81
         self.selected_pattern = None
+
+        self.settings_label = tk.Label(self, text='Actions:')
+        self.settings_label.grid(column=1, columnspan=2)
 
         self.empty_label = tk.Label(self, text=' ')
         self.empty_label.grid(row=4, columnspan=2)
@@ -201,6 +205,7 @@ class ActionButtonFrame(tk.Frame):
 
     def set_theme(self, bg: str):
         self['bg'] = bg
+        self.settings_label['bg'] = bg
         self.empty_label['bg'] = bg
 
     def set_states(self, state: str, new_state_buttons: list[str] = []):
@@ -231,19 +236,19 @@ class ActionButtonFrame(tk.Frame):
     def on_press_load(self):
         self.selected_pattern = self._pt_listbox.get_selection()
         if self.selected_pattern is not None:
-            loaded_grid = self._pt_listbox.patterns[self.selected_pattern]
+            loaded_board = self._pt_listbox.patterns[self.selected_pattern]
             self._gui.set_info_text('pattern_load', self.selected_pattern)
-            self._grid.import_(loaded_grid)
-            self._grid_frame.update_all()
+            self._board.import_(loaded_board)
+            self._board_frame.update_all()
             self._pt_listbox.unfocus()
 
     def on_press_solve(self):
-        self.pre_solve_grid = self._grid.board.copy()  # copying values instead of a reference (important!!)
-        count, dt = self._grid.solve()
+        self.pre_solve_board = self._board.board.copy()  # copying values instead of a reference (important!!)
+        count, dt = self._board.solve()
         if (count, dt) != (None, None):
             self._gui.set_info_text('board_solve', count, f'{dt:.3f}', count/dt)
             self._gui.set_states_on_event('solve')
-            self._grid_frame.update_after_solve(self.pre_solve_grid)
+            self._board_frame.update_after_solve(self.pre_solve_board)
         else:
             self._gui.set_info_text('board_fail')
         self._pt_listbox.unfocus()
@@ -251,49 +256,62 @@ class ActionButtonFrame(tk.Frame):
     def on_press_clear(self):
         self._gui.set_states_on_event('normal')
         self._gui.set_info_text('board_clear')
-        self._grid.clear()
-        self._grid_frame.update_all()
+        self._board.clear()
+        self._board_frame.update_all()
         self._pt_listbox.unfocus()
 
     def on_press_undo(self):
         self._gui.set_states_on_event('normal')
         self._gui.set_info_text('board_undo')
-        self._grid.board, self.pre_solve_grid = self.pre_solve_grid, [0] * 81
-        self._grid_frame.update_all()
+        self._board.board, self.pre_solve_board = self.pre_solve_board, [0] * 81
+        self._board_frame.update_all()
         self._pt_listbox.unfocus()
 
 
-class PatternList(tk.Listbox):
+class PatternFrame(tk.Frame):
     def __init__(self, gui: MainGUI):
-        super().__init__(height=15)
+        super().__init__()
+
         self._gui = gui
+        self.pattern_label = tk.Label(self, text='Your saved patterns:')
+        self.pattern_label.grid(sticky='n')
+        self.listbox = tk.Listbox(self, height=15)
+        self.listbox.grid(row=1)
+
         with open('database.json', 'r') as f:
             self.patterns = json.load(f)
         self.update_patterns()
 
+    def set_state(self, state: str):
+        self.listbox['state'] = state
+
+    def set_theme(self, bg: str):
+        self['bg'] = bg
+        self.pattern_label['bg'] = bg
+
     def get_selection(self) -> str:
-        if self.curselection():
-            return self.get(self.curselection())
+        if self.listbox.curselection():
+            return self.listbox.get(self.listbox.curselection())
 
     def unfocus(self):
-        self.selection_clear(0, 'end')
+        self.listbox.selection_clear(0, 'end')
 
     def update_patterns(self):
-        old_state = self['state']
-        self['state'] = 'normal'
+        old_state = self.listbox['state']
+        self.listbox['state'] = 'normal'
+        self.listbox.delete(0, 'end')
         self.patterns = {i: self.patterns[i] for i in sorted(self.patterns)}
-        self.delete(0, 'end')
 
         for pattern in self.patterns:
-            self.insert('end', pattern)
+            self.listbox.insert('end', pattern)
         with open('database.json', 'w') as f:
             json.dump(self.patterns, f, indent=4)
-        self['state'] = old_state
+        self.listbox['state'] = old_state
 
     def add_pattern(self, name: str) -> bool:
         add_successful = bool(name and name not in self.patterns)
         if add_successful:
-            self.patterns[name] = self._gui.main_grid.export()
+            self.patterns[name] = self._gui.main_board.export()
             self.update_patterns()
         return add_successful
 
@@ -311,3 +329,40 @@ class PatternList(tk.Listbox):
             self.patterns.pop(name)
             self.update_patterns()
         return delete_successful
+
+
+class ConfigBox(tk.Checkbutton):
+    def __init__(self, master: tk.Frame, text: str, row: int, command: callable):
+        self._var = tk.IntVar()
+        self.value = self._var.get()
+        super().__init__(master=master, text=text, variable=self._var, command=lambda: self.call(command))
+        self.grid(row=row, sticky='w', padx=5, pady=5)
+
+    def call(self, command: callable):
+        self.value = self._var.get()
+        command()
+
+
+class ConfigFrame(tk.Frame):
+    def __init__(self, gui: MainGUI):
+        super().__init__()
+        self._gui = gui
+        self._board = gui.board_frame._board
+        self._label = tk.Label(self, text="Settings:")
+        self._label.grid()
+
+        self.config_MRV = ConfigBox(self, "Use MRV heuristic", 1, self.set_use_MRV)
+        self.config_options = (self.config_MRV,)
+
+    def set_use_MRV(self):
+        self._board.use_MRV = self.config_MRV.value
+
+    def set_state(self, state: str):
+        for opt in self.config_options:
+            opt['state'] = state
+
+    def set_theme(self, bg: str):
+        self['bg'] = bg
+        self._label['bg'] = bg
+        for opt in self.config_options:
+            opt['bg'] = bg

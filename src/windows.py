@@ -10,12 +10,14 @@ class Window(tk.Tk):
         self.title('')
 
         self._gui = gui
-        self._grid = gui.main_grid
-        self._grid_frame = gui.grid_frame
-        self._pt_listbox = gui.pattern_listbox
-        self.selected_pattern = gui.bt_frame.selected_pattern
+        self._board = gui.main_board
+        self._board_frame = gui.board_frame
+        self._pt_listbox = gui.pattern_frame
+        self.selected_pattern = gui.action_frame.selected_pattern
         self.state_on_enter = gui.state
 
+        self.bg = gui['bg']
+        self['bg'] = gui['bg']
         self._gui.opened_window = self
         self._gui.set_info_text('empty')
         self._gui.set_states_on_event('open_win')
@@ -33,9 +35,11 @@ class EntryWindow(Window):
 
         self.title_label = tk.Label(self, text=title)
         self.title_label.grid(row=0, columnspan=3)
+        self.title_label['bg'] = self.bg
 
         self.info_label = tk.Label(self)
         self.info_label.grid(row=2, columnspan=3)
+        self.info_label['bg'] = self.bg
 
         self.entry = tk.Entry(self, width=entry_width)
         self.entry.grid(row=1, pady=15)
@@ -72,9 +76,9 @@ class ImportWindow(EntryWindow):
 
     def confirm(self, event=None):
         prompt = self.entry.get()
-        if self._grid.import_(prompt):
+        if self._board.import_(prompt):
             self._gui.set_info_text('pattern_import')
-            self._grid_frame.update_all()
+            self._board_frame.update_all()
             self.on_close()
         elif prompt:
             self.info_label['text'] = 'Invalid input!'
@@ -86,10 +90,11 @@ class ExportWindow(Window):
 
         self.title_label = tk.Label(self, text='Exported this pattern as a copyable string.')
         self.title_label.grid(row=0)
+        self.title_label['bg'] = self.bg
 
         self.export_str = tk.Entry(self, width=83, justify='center')
         self.export_str.grid(row=1)
-        self.export_str.insert(0, self._grid.export())
+        self.export_str.insert(0, self._board.export())
 
 
 class RenameWindow(EntryWindow):
@@ -139,8 +144,8 @@ class RandomWindow(EntryWindow):
         prompt = self.entry.get()
         if prompt.isdigit() and 0 <= int(prompt) <= 100:
             self._gui.set_info_text('pattern_random')
-            self._grid.generate_random(int(prompt))
-            self._grid_frame.update_all()
+            self._board.generate_random(int(prompt))
+            self._board_frame.update_all()
             self.on_close()
         elif prompt:
             self.info_label['text'] = 'Invalid input!'
