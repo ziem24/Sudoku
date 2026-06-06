@@ -1,4 +1,4 @@
-from src import tk, MainGUI, SaveWindow, ImportWindow, ExportWindow, RenameWindow, DeleteWindow, RandomWindow
+from src import tk, SaveWindow, ImportWindow, ExportWindow, RenameWindow, DeleteWindow, RandomWindow
 
 
 class ActionButton(tk.Button):
@@ -8,7 +8,7 @@ class ActionButton(tk.Button):
 
 
 class ActionFrame(tk.Frame):
-    def __init__(self, gui: MainGUI):
+    def __init__(self, gui: tk.Tk):
         super().__init__()
 
         self._gui = gui

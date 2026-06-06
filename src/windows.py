@@ -138,11 +138,12 @@ class DeleteWindow(Window):
 
 class RandomWindow(EntryWindow):
     def __init__(self, gui: tk.Tk):
-        super().__init__(gui, 'Enter what % of cells should be filled (0 <= x <= 100)')
+        super().__init__(gui, "Enter how many cells should be filled (0 <= x <= 81)\n" +
+                         "Sudokus with a single solution require at least 17 cells")
 
     def confirm(self, event=None):
         prompt = self.entry.get()
-        if prompt.isdigit() and 0 <= int(prompt) <= 100:
+        if prompt.isdigit() and 0 <= int(prompt) <= 81:
             self._gui.set_info_text('pattern_random')
             self._board.generate_random(int(prompt))
             self._board_frame.update_all()

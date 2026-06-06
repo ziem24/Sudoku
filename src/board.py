@@ -135,7 +135,7 @@ class Board():
         else:
             return (None, None)
 
-    def generate_random(self, perc: int):
+    def generate_random(self, cells: int):
         self.board = [0] * 81
         candidates = ['Rajski ogród']
         filled_cells = []
@@ -147,7 +147,10 @@ class Board():
             self.board[current] = random.choice(candidates) if candidates else 0
 
         self.solve(random_gen=True)
-        # self.board = [0 if random.randint(1, 100) > int(perc) else i for i in self.board]
+        randomly_left_out = list(range(81))
+        random.shuffle(randomly_left_out)
+        randomly_left_out = randomly_left_out[:cells]
+        self.board = [0 if i not in randomly_left_out else self.board[i] for i in range(81)]
 
     def import_(self, string: str) -> bool:
         if len(string) != 81 or not string.isdigit():

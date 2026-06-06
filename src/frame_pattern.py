@@ -1,8 +1,8 @@
-from src import tk, json, MainGUI
+from src import tk, json
 
 
 class PatternFrame(tk.Frame):
-    def __init__(self, gui: MainGUI):
+    def __init__(self, gui: tk.Tk):
         super().__init__()
 
         self._gui = gui

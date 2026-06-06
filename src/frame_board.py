@@ -1,9 +1,9 @@
 import platform
-from src import tk, MainGUI
+from src import tk
 
 
 class Cell(tk.Button):
-    def __init__(self, master: tk.Frame, gui: MainGUI, index: int):
+    def __init__(self, master: tk.Frame, gui: tk.Tk, index: int):
         width = {'Linux': 1, 'Windows': 2}.get(platform.uname().system, 1)
         super().__init__(width=width, height=1, master=master, text=' ', command=self.on_click)
 
@@ -37,7 +37,7 @@ class Cell(tk.Button):
 
 
 class BoardFrame(tk.Frame):
-    def __init__(self, gui: MainGUI):
+    def __init__(self, gui: tk.Tk):
         super().__init__()
         self._gui = gui
         self._board = gui.main_board

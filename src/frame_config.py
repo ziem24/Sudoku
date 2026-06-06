@@ -1,4 +1,4 @@
-from src import tk, MainGUI
+from src import tk
 
 
 class ConfigBox(tk.Checkbutton):
@@ -14,7 +14,7 @@ class ConfigBox(tk.Checkbutton):
 
 
 class ConfigFrame(tk.Frame):
-    def __init__(self, gui: MainGUI):
+    def __init__(self, gui: tk.Tk):
         super().__init__()
         self._gui = gui
         self._board = gui.board_frame._board
